@@ -26,6 +26,7 @@
         <module>changgou-service-pay</module>
         <module>changgou-service-seckill</module>
         <module>changgou_service_ordercentre</module>
+        <module>changgou-service-pingjia</module>
     </modules>
 
     <dependencies>

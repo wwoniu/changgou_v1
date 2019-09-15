@@ -1,6 +1,7 @@
 package com.changgou.order.service;
 
 import com.changgou.order.pojo.Order;
+import com.changgou.order.pojo.OrderItem;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
 
@@ -96,4 +97,8 @@ public interface OrderService {
     List<Order> deliveryTheGoods(String username);
 
     int confirm(String orderId);
+
+    List<Order> findByUsername(String username);
+
+    List<OrderItem> findByOrderId(String orderId);
 }

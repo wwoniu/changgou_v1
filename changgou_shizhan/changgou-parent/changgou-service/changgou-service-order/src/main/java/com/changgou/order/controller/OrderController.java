@@ -2,6 +2,7 @@ package com.changgou.order.controller;
 
 import com.changgou.order.config.TokenDecode;
 import com.changgou.order.pojo.Order;
+import com.changgou.order.pojo.OrderItem;
 import com.changgou.order.service.OrderService;
 import com.github.pagehelper.PageInfo;
 import entity.Result;
@@ -9,6 +10,8 @@ import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +28,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private OrderService orderItemService;
 
     /***
      * Order分页条件搜索实现
@@ -185,5 +191,35 @@ public class OrderController {
     public Result confirm(@RequestParam String orderId){
         int i = orderService.confirm(orderId);
         return new Result(true, StatusCode.OK,"确认收货成功",i);
+    }
+
+    /**
+     * 得到订单中心信息
+     * @param
+     * @return
+     */
+    @RequestMapping("/orderDetail")
+    public Result<List<Map>> findByUsername(){
+
+        Map<String, String> userInfo = tokenDecode.getUserInfo();
+        String username = userInfo.get("username");
+        //最后封装到resultlist
+        List<Map> resultList=new ArrayList();
+        //查询出订单列表
+        List<Order> orderList = orderService.findByUsername(username);
+        for (Order order : orderList) {
+            String orderId = order.getId();
+            //根据订单id查询出item列表
+            List<OrderItem> orderItemList= orderItemService.findByOrderId(orderId);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("order",order);
+            map.put("orderItemList",orderItemList);
+            resultList.add(map);
+        }
+        //将查询结果封装到map中
+        Map<String,Object> map=new HashMap<>();
+        //根据
+
+        return new Result<List<Map>>(true, StatusCode.OK,"查询显示订单中心",resultList);
     }
 }

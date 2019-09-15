@@ -463,5 +463,31 @@ public class OrderServiceImpl implements OrderService {
         return i;
     }
 
+    /**
+     * 通过用户名找到所有订单
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Order> findByUsername(String username) {
+
+        Order order = new Order();
+        order.setUsername(username);
+        order.setPayStatus("1");
+        order.setConsignStatus("0");
+        List<Order> orderList = orderMapper.select(order);
+        return orderList;
+    }
+
+
+    @Override
+    public List<OrderItem> findByOrderId(String orderId) {
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrderId(orderId);
+        List<OrderItem> orderItemList = orderItemMapper.select(orderItem);
+        return orderItemList;
+    }
+
 
 }
