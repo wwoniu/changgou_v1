@@ -123,12 +123,15 @@ public class CitiesServiceImpl implements CitiesService {
 
     /**
      * 根据ID查询Cities
-     * @param id
+     * @param
      * @return
      */
     @Override
-    public Cities findById(String id){
-        return  citiesMapper.selectByPrimaryKey(id);
+    public  List<Cities> findById(String provinceid){
+        Cities citiesl =new Cities();
+        citiesl.setProvinceid(provinceid);
+        List<Cities> cities = citiesMapper.select(citiesl);
+        return cities;
     }
 
     /**

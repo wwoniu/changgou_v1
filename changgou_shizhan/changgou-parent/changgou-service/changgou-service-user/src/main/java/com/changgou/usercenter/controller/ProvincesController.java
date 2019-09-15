@@ -115,7 +115,7 @@ public class ProvincesController {
     }
 
     /***
-     * 查询Provinces全部数据
+     * 省份遍历
      * @return
      */
     @GetMapping
@@ -124,4 +124,5 @@ public class ProvincesController {
         List<Provinces> list = provincesService.findAll();
         return new Result<List<Provinces>>(true, StatusCode.OK,"查询成功",list) ;
     }
+
 }
