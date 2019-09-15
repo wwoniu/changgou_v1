@@ -103,15 +103,15 @@ public class CitiesController {
     }
 
     /***
-     * 根据ID查询Cities数据
-     * @param id
+     * 根据provinceid查询市区
+     * @param
      * @return
      */
-    @GetMapping("/{id}")
-    public Result<Cities> findById(@PathVariable String id){
+    @GetMapping("/{provinceid}")
+    public Result< List<Cities>> findById(@PathVariable(name ="provinceid") String provinceid){
         //调用CitiesService实现根据主键查询Cities
-        Cities cities = citiesService.findById(id);
-        return new Result<Cities>(true,StatusCode.OK,"查询成功",cities);
+        List<Cities> cities = citiesService.findById(provinceid);
+        return new Result< List<Cities>>(true,StatusCode.OK,"查询成功",cities);
     }
 
     /***

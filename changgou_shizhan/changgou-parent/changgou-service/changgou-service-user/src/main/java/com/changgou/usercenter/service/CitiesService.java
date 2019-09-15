@@ -59,7 +59,7 @@ public interface CitiesService {
      * @param id
      * @return
      */
-     Cities findById(String id);
+    List<Cities> findById(String id);
 
     /***
      * 查询所有Cities

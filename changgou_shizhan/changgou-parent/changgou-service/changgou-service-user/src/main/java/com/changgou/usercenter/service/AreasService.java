@@ -59,7 +59,7 @@ public interface AreasService {
      * @param id
      * @return
      */
-     Areas findById(String id);
+    List<Areas> findById(String id);
 
     /***
      * 查询所有Areas

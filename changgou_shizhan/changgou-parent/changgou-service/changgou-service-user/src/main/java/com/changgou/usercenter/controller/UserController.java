@@ -2,26 +2,24 @@ package com.changgou.usercenter.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.changgou.usercenter.config.TokenDecode;
+import com.changgou.usercenter.dao.UserMapper;
 import com.changgou.usercenter.pojo.User;
 import com.changgou.usercenter.service.UserService;
 import com.github.pagehelper.PageInfo;
-import entity.BCrypt;
-import entity.JwtUtil;
-import entity.Result;
-import entity.StatusCode;
+import com.netflix.client.ClientException;
+import entity.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /****
  * @Author:admin
@@ -36,6 +34,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     /***
      * User分页条件搜索实现
@@ -221,4 +222,87 @@ public class UserController {
        return new Result<>(true,StatusCode.OK,"查询用户信息成功",user);
     }
 
+
+    //登录状态修改密码
+    @PutMapping("/updatepassword")
+    public Result updatepassword(@RequestParam(value = "username") String username,@RequestParam(value = "password") String password,@RequestParam(value = "newpassword") String newpassword ){
+        //查询要修改密码的用户
+        User user =userService.selectusername(username);
+        //获取数据库里的密码
+        String password1 = user.getPassword();
+        //对输入的旧密码进行加密
+        String s = Base64.toBase64String(password.getBytes());
+        //判断输入的旧密码是否与数据库里的旧密码是否相同
+        if (password1.equals(s)){
+            //对新密码进行加密
+            String updatepassword = Base64.toBase64String(newpassword.getBytes());
+            //设置新密码
+            user.setPassword(updatepassword);
+            //将新密码保存到数据库
+            userMapper.updateByPrimaryKey(user);
+            return new Result(true,StatusCode.OK,"更改密码成功",user);
+        }else {
+            return new Result(false,StatusCode.ERROR,"旧密码错误,请重新输入");
+        }
+
+    }
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+    //发送短信
+    @RequestMapping("/send4Order")
+    public Result send4Order(String telephone){
+        //获取随机数
+        Integer code = ValidateCodeUtils.generateValidateCode(4);
+        try {
+            //发送短信
+            SMSUtils.sendShortMessage(SMSUtils.VALIDATE_CODE,telephone,code.toString());
+            System.out.println(code);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,StatusCode.NOTFOUNDERROR,"短信发送失败");
+        }
+        //存入redis
+        redisTemplate.boundValueOps("DUANXIN"+telephone).set(code.toString());
+        //设置有效时长1个小时
+        redisTemplate.expireAt("DUANXIN"+ telephone,DateUtil.addDateHour(new Date(), 1));
+        return new Result(true,StatusCode.OK,"短信发送成功");
+    }
+
+    //短信修改密码
+    @RequestMapping("/submit")
+    public Result submitOrder(@RequestParam String telephone,@RequestParam String code,@RequestParam String username,@RequestParam String password){
+        //从Redis中获取缓存的验证码，key为手机号+"DUANXIN"
+
+        Object o1 = redisTemplate.boundValueOps("DUANXIN" + telephone).get();
+        //校验手机验证码
+        if (o1.equals(code)){
+            //获取用户信息
+            User byId = userService.findById(username);
+            String phone = byId.getPhone();
+            String byIdUsername = byId.getUsername();
+            //判断用户名和绑定的手机号
+            if (phone.equals(telephone)&&byIdUsername.equals(username)){
+                //加密新密码
+                String base64String = Base64.toBase64String(password.getBytes());
+                //设置新密码
+                byId.setPassword(base64String);
+                //保存新密码
+                userMapper.updateByPrimaryKey(byId);
+            }else {
+                return new Result(false,StatusCode.ERROR,"用户名或手机号不一致");
+            }
+            return new Result(true,StatusCode.OK,"修改密码成功");
+        }
+
+        return new Result(false,StatusCode.ERROR,"验证码错误");
+    }
+
+
+    @GetMapping("/user/name")
+    public Result getusername(){
+        Map<String, String> stringMap = tokenDecode.getUserInfo();
+        String username = stringMap.get("username");
+        return new Result<>(true,StatusCode.OK,"查询成功!",username);
+    }
 }

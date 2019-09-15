@@ -103,15 +103,15 @@ public class AreasController {
     }
 
     /***
-     * 根据ID查询Areas数据
-     * @param id
+     * 根据cityid遍历地区
+     * @param cityid
      * @return
      */
-    @GetMapping("/{id}")
-    public Result<Areas> findById(@PathVariable String id){
+    @GetMapping("/{cityid}")
+    public Result<List<Areas>> findById(@PathVariable String cityid){
         //调用AreasService实现根据主键查询Areas
-        Areas areas = areasService.findById(id);
-        return new Result<Areas>(true,StatusCode.OK,"查询成功",areas);
+        List<Areas> areas = areasService.findById(cityid);
+        return new Result<List<Areas>>(true,StatusCode.OK,"查询成功",areas);
     }
 
     /***
