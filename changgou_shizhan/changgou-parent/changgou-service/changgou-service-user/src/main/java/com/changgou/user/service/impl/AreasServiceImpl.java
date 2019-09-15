@@ -127,8 +127,10 @@ public class AreasServiceImpl implements AreasService {
      * @return
      */
     @Override
-    public Areas findById(String id){
-        return  areasMapper.selectByPrimaryKey(id);
+    public List<Areas> findById(String id){
+        Areas areas=new Areas();
+        areas.setCityid(id);
+        return  areasMapper.select(areas);
     }
 
     /**

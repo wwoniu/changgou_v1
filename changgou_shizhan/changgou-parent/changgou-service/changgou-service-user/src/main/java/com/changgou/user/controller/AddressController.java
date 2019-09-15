@@ -4,12 +4,14 @@ import com.changgou.user.config.TokenDecode;
 import com.changgou.user.pojo.Address;
 import com.changgou.user.service.AddressService;
 import com.github.pagehelper.PageInfo;
+import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import entity.Result;
 import entity.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /****
  * @Author:admin
@@ -77,7 +79,7 @@ public class AddressController {
     }
 
     /***
-     * 修改Address数据
+     * 修改编辑收货地址
      * @param address
      * @param id
      * @return
@@ -92,7 +94,7 @@ public class AddressController {
     }
 
     /***
-     * 新增Address数据
+     * 新增收货地址
      * @param address
      * @return
      */
@@ -128,20 +130,16 @@ public class AddressController {
 
     @Autowired
     private TokenDecode tokenDecode;
-
-
-    @RequestMapping("/user/list")
-    public Result<List<Address>> list() {
-
-        //获取当前登录的用户的信息
-        String username = tokenDecode.getUserInfo().get("username");
-
-        //调用服务层的方法 获取该用户的下的所有的地址列表
-        List<Address> addressList = addressService.list(username);
-
-        //返回
-        return new Result<List<Address>>(true, StatusCode.OK, "地址列表查询成功", addressList);
-
-
+    //查询用户收货地址列表
+    @GetMapping("/user/list")
+    public Result<List<Address>> list(){
+        Map<String, String> stringMap = tokenDecode.getUserInfo();
+        String username = stringMap.get("username");
+        List<Address>addressList=addressService.list(username);
+        return new Result<List<Address>>(true,StatusCode.OK,"查询成功!",addressList);
     }
+
+
+
+
 }

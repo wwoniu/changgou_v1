@@ -81,4 +81,6 @@ public interface UserService {
     void geRenXinXiUpdate(User user);
 
     User userInfo(String username);
+
+    User selectusername(String username);
 }
